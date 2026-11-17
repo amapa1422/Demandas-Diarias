@@ -501,6 +501,40 @@ body:has(.overlay.open) .reminder-corner{opacity:0;pointer-events:none}
 @media(min-width:761px) and (max-width:1220px){.daily-workspace{grid-template-columns:minmax(0,1fr)}.daily-insights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}.daily-insights .recent-summary{grid-column:1/-1}.daily-workspace>.board{min-height:380px}.daily-workspace>.board .column{min-height:380px!important}}
 @media(max-width:760px){.daily-workspace{display:flex;flex-direction:column}.daily-workspace>.board{flex:none;min-height:0;grid-template-columns:none!important}.daily-insights{gap:10px}.insight-box{padding:14px}.glance-stat strong{font-size:26px}}
 @media(prefers-reduced-motion:reduce){.progress-track span{transition:none}}
+/* Altura limitada somente no Dia desktop: cada lista possui sua própria rolagem. */
+@media(min-width:761px){
+ .main:has(>.daily-view:not([hidden])){height:100dvh;min-height:0}
+ .daily-view>.board-heading,.daily-view>.hero,.daily-view>.board-toolbar{flex-shrink:0}
+ .daily-view>.daily-workspace{min-height:0;grid-template-rows:minmax(0,1fr)}
+ .daily-workspace>.board{min-height:0;grid-template-rows:minmax(0,1fr)}
+ .daily-workspace>.board .column{display:flex;flex-direction:column;min-height:0!important;overflow:hidden}
+ .daily-workspace>.board .column-title{flex-shrink:0}
+ .daily-workspace>.board .cards{flex:1;min-height:0;overflow-y:auto;overscroll-behavior-y:contain;scrollbar-width:thin;scrollbar-color:#454850 transparent;padding:3px 4px 4px}
+ .daily-workspace>.board .cards>*{flex-shrink:0}
+ .daily-workspace>.board .cards::-webkit-scrollbar{width:6px}
+ .daily-workspace>.board .cards::-webkit-scrollbar-thumb{background:#454850;border-radius:6px}
+ .daily-insights{overflow-y:auto;overscroll-behavior-y:contain;scrollbar-width:thin}
+ #readBackdrop{justify-content:flex-end;padding:0}
+ #readBackdrop .read-modal{height:100dvh;max-height:100dvh;border-radius:23px 0 0 23px}
+}
+@media(min-width:761px) and (max-width:1220px){
+ .daily-view>.daily-workspace{grid-template-rows:minmax(0,1fr) auto}
+ .daily-view .daily-insights{max-height:18dvh}
+}
+/* Cards compactos por padrão; expandir só altera a apresentação. */
+.board .task{flex-shrink:0;padding:11px 12px;border-left:3px solid var(--accent)!important;background:#15171b!important;box-shadow:inset 0 1px rgba(255,255,255,.04)!important}
+.board .task-name{margin-bottom:7px;font-size:12px!important}
+.board .task .task-note{display:none!important}
+.board.cards-expanded .task .task-note{display:block!important}
+.board .chip{font-size:10px;padding:3px 6px;background:var(--tint)}
+.comment-link{color:#edaa63;text-decoration:underline;text-decoration-color:rgba(237,170,99,.4);text-underline-offset:3px}
+.comment-link:hover,.comment-link:focus-visible{color:#ffc387;text-decoration-color:currentColor}
+body:has(.overlay.open) .reminder-corner *{pointer-events:none}
+.board-options{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.board-options select,.board-options button{height:36px;max-width:100%;border:1px solid var(--line);border-radius:10px;background:#151619;color:var(--ink);padding:0 9px;font:inherit;font-size:12px}
+.board-options button[aria-pressed=true]{background:#303238}
+.page-board:not(.daily-view) .board-options label:has(#sortOrder),.page-board:not(.daily-view) #expandCards{display:none}
+.board-options label{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
 </style></head>
 <body>
 <div class="app">
@@ -515,7 +549,7 @@ body:has(.overlay.open) .reminder-corner{opacity:0;pointer-events:none}
 <main class="main"><div class="main-top"><button class="icon-btn mobile-menu" id="mobileMenu" aria-label="Abrir menu lateral"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><span class="mobile-title">Demandas Diárias</span></div>
 <div class="page-board" id="boardPage">
 <div class="board-heading"><span class="board-mark" aria-hidden="true"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="4"/><path d="M7.5 9h9M7.5 13h6M7.5 17h8"/></svg></span><div><h1>Demandas Diárias</h1><p>Quadro de demandas</p></div></div><section class="hero"><div class="nav-date"><button type="button" class="date-arrow" id="prevDay" title="Dia anterior" aria-label="Dia anterior"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button><button type="button" class="current-date" id="navBtn" aria-haspopup="dialog" aria-expanded="false" title="Escolher mês"><span id="navDate">qua, 04 nov</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><button type="button" class="date-arrow" id="nextDay" title="Próximo dia" aria-label="Próximo dia"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button><button type="button" class="today-btn" id="todayBtn">Hoje</button><div class="picker" id="monthPicker" role="dialog" aria-label="Escolher mês"><div class="picker-head"><button type="button" class="picker-nav" id="pickerPrev" aria-label="Ano anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button><span class="picker-year" id="pickerYear"></span><button type="button" class="picker-nav" id="pickerNext" aria-label="Próximo ano"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button></div><div class="picker-grid" id="pickerGrid"></div></div></div><div class="seg" id="viewSeg" role="tablist" aria-label="Estilo de visão"><span class="seg-thumb" aria-hidden="true"></span><button type="button" role="tab" data-view="day">Dia</button><button type="button" role="tab" data-view="week">Semana</button><button type="button" role="tab" data-view="month">Mês</button></div></section>
-<div class="board-toolbar"><div class="toolbar-left"><label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="searchInput" placeholder="Buscar demandas" autocomplete="off" aria-label="Buscar demandas"></label><div class="fchips" id="filterChips" role="group" aria-label="Filtrar por status"></div></div><div class="toolbar-right"><button type="button" class="carry-btn" id="carryBtn" hidden><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13"/><path d="m13 6 6 6-6 6"/></svg><span>Trazer pendentes para hoje</span></button><span class="total-info" id="summary">0 demandas neste dia</span></div></div>
+<div class="board-toolbar"><div class="toolbar-left"><label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="searchInput" placeholder="Buscar demandas" autocomplete="off" aria-label="Buscar demandas"></label><div class="fchips" id="filterChips" role="group" aria-label="Filtrar por status"></div></div><div class="board-options"><label>Prioridade<select id="priorityFilter" aria-label="Filtrar por prioridade"><option value="all">Todas</option><option value="alta">Alta</option><option value="media">Média</option><option value="baixa">Baixa</option><option value="none">Sem prioridade</option></select></label><label>Ordenação<select id="sortOrder" aria-label="Ordenar demandas"><option value="manual">Manual</option><option value="priority">Prioridade</option><option value="title">Nome</option></select></label><button type="button" id="expandCards" aria-pressed="false">Expandir cards</button></div><div class="toolbar-right"><button type="button" class="carry-btn" id="carryBtn" hidden><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h13"/><path d="m13 6 6 6-6 6"/></svg><span>Trazer pendentes para hoje</span></button><span class="total-info" id="summary">0 demandas neste dia</span></div></div>
 <div class="daily-workspace" id="dailyWorkspace">
 <section class="board" aria-label="Quadro diário de demandas">
  <div class="column" data-status="diarias"><div class="column-title"><span class="status-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l3 3-3 3"/><path d="M4 11V9a4 4 0 0 1 4-4h12"/><path d="M7 22l-3-3 3-3"/><path d="M20 13v2a4 4 0 0 1-4 4H4"/></svg>Tarefas diárias</span><span class="count">0</span></div><button type="button" class="add-task" data-add="diarias"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Nova página</button><div class="cards" aria-label="Tarefas diárias"></div></div>
@@ -599,6 +633,7 @@ const businessDay=(k,direction=1)=>{const d=parseDay(k);while(d.getDay()===0||d.
 let selectedDay=businessDay(localToday()),lastToday=localToday(),tasks=[],repeats=[],editingId=null,targetStatus='diarias',draggedId=null,formPriority='',query='';
 const normalizeStatus=s=>s==='sem-status'?'diarias':s;
 const hiddenStatus=new Set();
+let priorityFilter='all',sortOrder='manual';
 /* ---------- dados ---------- */
 const validTask=t=>t&&typeof t==='object'&&labels[normalizeStatus(t.status)]&&typeof t.title==='string';
 const loadRepeats=()=>{try{const a=JSON.parse(localStorage.getItem(REP_KEY));repeats=Array.isArray(a)?a.filter(r=>r&&typeof r.id==='string'&&typeof r.title==='string'&&typeof r.start==='string'):[]}catch{repeats=[]}};
@@ -719,7 +754,7 @@ const save=()=>{try{localStorage.setItem(prefix+selectedDay,JSON.stringify(tasks
 function notify(msg){const t=byId('toast');t.textContent=msg;t.classList.add('show');clearTimeout(notify.timeout);notify.timeout=setTimeout(()=>t.classList.remove('show'),2600)}
 function goDay(key,direction=1){if(!/^\d{4}-\d{2}-\d{2}$/.test(key))return;closeRead();closeDialog();selectedDay=businessDay(key,direction);load();render();renderCalendar();if(innerWidth<=760)closeMobile()}
 /* ---------- filtros ---------- */
-const visible=t=>!hiddenStatus.has(t.status)&&(!query||norm(t.title+' '+(t.note||'')).includes(query));
+const visible=t=>!hiddenStatus.has(t.status)&&(priorityFilter==='all'||(PRI[t.priority]?t.priority:'none')===priorityFilter)&&(!query||norm(t.title+' '+(t.note||'')).includes(query));
 const PRIO={diarias:0,andamento:1,concluido:2};
 const byTime=(a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99');
 const byPrio=(a,b)=>(PRIO[a.status]-PRIO[b.status])||((PRI_ORDER[a.priority]??3)-(PRI_ORDER[b.priority]??3))||byTime(a,b);
@@ -728,6 +763,29 @@ const fmt=(d,o)=>new Intl.DateTimeFormat('pt-BR',o).format(d);
 const cap=x=>x[0].toUpperCase()+x.slice(1);
 const prioTag=p=>{const e=document.createElement('span');e.className='prio-tag';e.style.setProperty('--pc',PRI[p].color);e.innerHTML=svgI(PRI[p].icon,11,2)+PRI[p].label;return e};
 /* ---------- Visualização somente leitura ---------- */
+function renderComment(host,value){
+ const text=String(value||''),fragment=document.createDocumentFragment();
+ const pattern=/(?:https?:\/\/[^\s<>"']+|www\.[^\s<>"']+|(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}(?:[/:?#][^\s<>"']*)?)/gi;
+ let end=0;
+ for(const match of text.matchAll(pattern)){
+  const start=match.index;
+  if(start&&/[\w@.\/-]/.test(text[start-1]))continue;
+  let raw=match[0].replace(/[.,;:!?]+$/,'');
+  while(/[)\]}]$/.test(raw)){
+   const close=raw.at(-1),open={')':'(',']':'[','}':'{'}[close];
+   if(raw.split(close).length<=raw.split(open).length)break;
+   raw=raw.slice(0,-1);
+  }
+  try{
+   const url=new URL(/^https?:\/\//i.test(raw)?raw:'https://'+raw);
+   if(!['http:','https:'].includes(url.protocol))continue;
+   const link=document.createElement('a');link.className='comment-link';link.href=url.href;
+   link.textContent=raw;link.target='_blank';link.rel='noopener noreferrer';
+   fragment.append(document.createTextNode(text.slice(end,start)),link);end=start+raw.length;
+  }catch{}
+ }
+ fragment.append(document.createTextNode(text.slice(end)));host.replaceChildren(fragment);
+}
 let readReturnFocus=null;
 function openRead(id,day=selectedDay){
   const item=readDay(day).find(t=>t.id===id);if(!item)return;
@@ -737,7 +795,7 @@ function openRead(id,day=selectedDay){
   byId('readStatus').style.setProperty('--accent',CH[item.status]||'#6c9cf0');
   byId('readPriority').textContent='Prioridade: '+(PRI[item.priority]?.label||'Nenhuma');
   byId('readDate').textContent=shortDate(day);
-  byId('readComment').textContent=item.note?.trim()||'Nenhum comentário adicionado.';
+  renderComment(byId('readComment'),item.note?.trim()||'Nenhum comentário adicionado.');
   byId('readComment').classList.toggle('empty',!item.note?.trim());
   const timeline=byId('historyList');timeline.replaceChildren();
   const events=Array.isArray(item.history)?item.history:[];
@@ -762,7 +820,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&byId('readBackdrop'
 /* ---------- visão dia ---------- */
 const dropLine=document.createElement('div');dropLine.className='drop-line';
 function renderDay(){
-for(const col of columns){const status=col.dataset.status,host=col.querySelector('.cards'),items=tasks.filter(t=>t.status===status&&visible(t));host.replaceChildren();col.querySelector('.count').textContent=items.length;
+for(const col of columns){const status=col.dataset.status,host=col.querySelector('.cards'),items=tasks.filter(t=>t.status===status&&visible(t));if(sortOrder!=='manual')items.sort(sortOrder==='priority'?byPrio:(a,b)=>a.title.localeCompare(b.title,'pt-BR'));host.replaceChildren();col.querySelector('.count').textContent=items.length;
 for(const item of items){const card=document.createElement('article');card.className='task';if(item.reminderDate&&!item.reminderDone&&item.reminderDate<=localToday())card.classList.add('reminder-due');card.dataset.id=item.id;card.tabIndex=0;card.setAttribute('aria-label',`${item.title}. ${labels[status]}. Pressione Enter para visualizar.`);
 const title=document.createElement('div');title.className='task-name';title.textContent=item.title;
 const bottom=document.createElement('div');bottom.className='task-bottom';const tags=document.createElement('div');tags.className='task-tags';
@@ -770,8 +828,8 @@ const chip=document.createElement('span');chip.className='chip';chip.innerHTML=I
 if(item.reminderDate&&!item.reminderDone){const rm=document.createElement('span');rm.className='reminder-mark';rm.textContent='🔔 '+shortDate(item.reminderDate);tags.append(rm)}
 if(item.time){const tm=document.createElement('span');tm.className='task-time';tm.innerHTML=svgI(CLOCK,12);tm.append(item.time);bottom.append(tm)}
 const edit=document.createElement('button');edit.className='task-edit';edit.type='button';edit.innerHTML=svgI('<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>',15,1.9);edit.title='Editar';edit.setAttribute('aria-label','Editar '+item.title);edit.addEventListener('click',e=>{e.stopPropagation();openDialog(status,item.id)});
-card.append(title);if(item.note){const n=document.createElement('div');n.className='task-note';n.textContent=item.note;card.append(n)}card.append(bottom,edit);
-card.addEventListener('click',e=>{if(!e.target.closest('.task-edit'))openRead(item.id)});card.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target===card){e.preventDefault();openRead(item.id)}});
+card.append(title);if(item.note){const n=document.createElement('div');n.className='task-note';renderComment(n,item.note);card.append(n)}card.append(bottom,edit);
+card.addEventListener('click',e=>{if(!e.target.closest('button,a'))openRead(item.id)});card.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target===card){e.preventDefault();openRead(item.id)}});
 bindDrag(card,{kind:'board',id:item.id,status});host.append(card)}}}
 function renderCalendar(){if(picker().classList.contains('open'))renderPicker()}
 /* ---------- modal ---------- */
@@ -849,7 +907,7 @@ for(let week=0;week<rows;week++)for(let wd=0;wd<5;wd++){
  cell.addEventListener('click',()=>openDayView(key));cell.addEventListener('keydown',e=>{if(e.key==='Enter')openDayView(key)});cell.dataset.key=key;grid.append(cell)
 }
 host.append(head,grid);return total}
-function render(){if(view==='day')renderDay();const today=businessDay(localToday());let total=tasks.filter(visible).length,label,inRange,noun;
+function render(){byId('boardPage').classList.toggle('daily-view',view==='day');if(view==='day')renderDay();const today=businessDay(localToday());let total=tasks.filter(visible).length,label,inRange,noun;
 byId('viewSeg').querySelectorAll('button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.view===view)));moveThumb(!render.done);render.done=true;
 byId('weekView').hidden=view!=='week';byId('monthView').hidden=view!=='month';byId('dailyWorkspace').hidden=view!=='day';
 if(view==='day'){const dd=parseDay(selectedDay);label=fmt(dd,{weekday:'short'}).replace('.','')+', '+String(dd.getDate()).padStart(2,'0')+' '+fmt(dd,{month:'short'}).replace('.','');inRange=selectedDay===today;noun='neste dia'}
@@ -937,7 +995,7 @@ function dragAfter(host,y){for(const c of host.querySelectorAll('.task:not(.drag
 function dropBoard(id,status,beforeId){const i=tasks.findIndex(t=>t.id===id);if(i<0)return;const [item]=tasks.splice(i,1);const previousStatus=item.status;item.status=status;if(previousStatus!==status)addHistory(item,'Movida de '+labels[previousStatus]+' para '+labels[status]);let at=beforeId?tasks.findIndex(t=>t.id===beforeId):-1;if(at<0){let last=-1;tasks.forEach((t,j)=>{if(t.status===status)last=j});at=last+1}tasks.splice(at,0,item);save();syncRepeat(item,selectedDay);render()}
 function landed(id){requestAnimationFrame(()=>{const el=document.querySelector('[data-id="'+(globalThis.CSS&&CSS.escape?CSS.escape(id):id)+'"]');if(!el||!el.animate)return;el.animate([{transform:'scale(.7)',opacity:.2},{transform:'scale(1.07)',opacity:1,offset:.6},{transform:'scale(1)',opacity:1}],{duration:480,easing:'cubic-bezier(.2,.8,.2,1)'});el.classList.add('landed');setTimeout(()=>el.classList.remove('landed'),900)})}
 let pending=null,drag=null,animating=false,suppressUntil=0,lastPt={x:0,y:0},autoRaf=0;const GHOST_ROT=2.5;
-function bindDrag(el,payload){el.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;if(drag||pending||animating||switching)return;if(e.target.closest('.task-edit'))return;const st={el,payload,x:e.clientX,y:e.clientY,touch:e.pointerType!=='mouse',timer:0};lastPt={x:e.clientX,y:e.clientY};pending=st;if(st.touch)st.timer=setTimeout(()=>{if(pending===st){pending=null;beginDrag(st)}},330)});el.addEventListener('contextmenu',e=>{if(pending||drag)e.preventDefault()})}
+function bindDrag(el,payload){el.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'&&e.button!==0)return;if(drag||pending||animating||switching)return;if(e.target.closest('.task-edit,a'))return;const st={el,payload,x:e.clientX,y:e.clientY,touch:e.pointerType!=='mouse',timer:0};lastPt={x:e.clientX,y:e.clientY};pending=st;if(st.touch)st.timer=setTimeout(()=>{if(pending===st){pending=null;beginDrag(st)}},330)});el.addEventListener('contextmenu',e=>{if(pending||drag)e.preventDefault()})}
 function beginDrag(st){const {el,payload}=st,r=el.getBoundingClientRect(),isMini=el.classList.contains('mini'),w=isMini?Math.max(r.width,180):r.width;const g=el.cloneNode(true);g.classList.add('drag-ghost');g.removeAttribute('id');g.setAttribute('aria-hidden','true');g.querySelectorAll('button,[tabindex]').forEach(n=>n.tabIndex=-1);if(payload.status)g.dataset.status=payload.status;
 g.style.left=r.left+'px';g.style.top=r.top+'px';g.style.width=w+'px';if(!isMini)g.style.height=r.height+'px';document.body.append(g);el.classList.add('drag-origin');document.body.classList.add('is-dragging');
 drag={...st,ghost:g,r,w,offX:Math.min(Math.max(lastPt.x-r.left,12),w-12),offY:Math.max(lastPt.y-r.top,8),target:null,cx:0,cy:0};if(navigator.vibrate&&st.touch)try{navigator.vibrate(12)}catch{}updateDrag(lastPt.x,lastPt.y);autoScroll()}
@@ -945,7 +1003,17 @@ function updateDrag(x,y){const d=drag;if(!d)return;d.cx=x-d.offX-d.r.left;d.cy=y
 const under=document.elementFromPoint(x,y);const t=d.payload.kind==='board'?(under&&under.closest('.column')):(under&&under.closest('.day-col,.cell:not(.out)'));
 if(t!==d.target){if(d.target)d.target.classList.remove('over');d.target=t||null;if(t)t.classList.add('over');else dropLine.remove()}
 if(t&&d.payload.kind==='board'){const host=t.querySelector('.cards'),after=dragAfter(host,y);if(after)host.insertBefore(dropLine,after);else host.append(dropLine)}}
-function autoScroll(){if(!drag)return;const {x,y}=lastPt,e=70;let moved=false;if(y<e){scrollBy(0,-(e-y)/4);moved=true}else if(y>innerHeight-e){scrollBy(0,(y-(innerHeight-e))/4);moved=true}
+function autoScroll(){if(!drag)return;const {x,y}=lastPt,e=70;let moved=false;
+const desktopBoard=drag.payload.kind==='board'&&innerWidth>760;
+if(desktopBoard){
+ const host=drag.target?.querySelector('.cards');
+ if(host){const r=host.getBoundingClientRect(),edge=Math.min(e,r.height/3),before=host.scrollTop;
+  if(y<r.top+edge)host.scrollTop-=Math.max(0,(r.top+edge-y)/4);
+  else if(y>r.bottom-edge)host.scrollTop+=Math.max(0,(y-r.bottom+edge)/4);
+  moved=host.scrollTop!==before;
+ }
+}
+if(!desktopBoard){if(y<e){scrollBy(0,-(e-y)/4);moved=true}else if(y>innerHeight-e){scrollBy(0,(y-(innerHeight-e))/4);moved=true}}
 if(drag.payload.kind==='board'){const bd=document.querySelector('.board');if(bd.scrollWidth>bd.clientWidth+2){const br=bd.getBoundingClientRect();if(x<br.left+e){bd.scrollLeft-=(br.left+e-x)/3;moved=true}else if(x>br.right-e){bd.scrollLeft+=(x-(br.right-e))/3;moved=true}}}
 if(moved)updateDrag(x,y);autoRaf=moved?requestAnimationFrame(autoScroll):0}
 function endDrag(ok){const d=drag;if(!d)return;drag=null;animating=true;cancelAnimationFrame(autoRaf);suppressUntil=performance.now()+400;const t=ok?d.target:null;
@@ -983,7 +1051,7 @@ else if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();if(!isOpen())
 else if(e.key==='Home'&&isOpen()){e.preventDefault();opts[0].focus()}else if(e.key==='End'&&isOpen()){e.preventDefault();opts[opts.length-1].focus()}
 else if(e.key==='Tab'&&isOpen())close()});
 wrap._close=()=>close();sel._sync=sync;sync()}
-document.querySelectorAll('select').forEach(enhanceSelect);
+document.querySelectorAll('.modal select').forEach(enhanceSelect);
 document.addEventListener('click',e=>{if(!e.target.closest('.dd'))document.querySelectorAll('.dd.open').forEach(d=>d._close())});
 /* ---------- ícones "?" de ajuda ---------- */
 const HELP={
@@ -1045,6 +1113,9 @@ byId('filterChips').innerHTML=Object.keys(PRIO).map(k=>`<button type="button" cl
 byId('filterChips').addEventListener('click',e=>{const b=e.target.closest('.fchip');if(!b)return;const s=b.dataset.st;if(hiddenStatus.has(s))hiddenStatus.delete(s);else hiddenStatus.add(s);b.setAttribute('aria-pressed',String(!hiddenStatus.has(s)));render()});
 byId('searchInput').addEventListener('input',e=>{query=norm(e.target.value.trim());render()});
 byId('searchInput').addEventListener('keydown',e=>{if(e.key==='Escape'){e.target.value='';query='';e.target.blur();render()}});
+byId('priorityFilter').addEventListener('change',e=>{priorityFilter=e.target.value;render()});
+byId('sortOrder').addEventListener('change',e=>{sortOrder=e.target.value;render()});
+byId('expandCards').addEventListener('click',e=>{const expanded=document.querySelector('.board').classList.toggle('cards-expanded');e.currentTarget.setAttribute('aria-pressed',String(expanded));e.currentTarget.textContent=expanded?'Recolher cards':'Expandir cards'});
 /* ---------- pendentes ---------- */
 byId('carryBtn').addEventListener('click',()=>{const today=localToday(),pend=tasks.filter(t=>t.status!=='concluido'&&!t.repeatId&&!t.carried);if(!pend.length)return;const dst=readDay(today);for(const t of pend){const carried={id:uid(),title:t.title,note:t.note||'',time:t.time||'',priority:t.priority||'',status:t.status};addHistory(carried,'Demanda trazida de '+shortDate(selectedDay));dst.push(carried);t.carried=true;addHistory(t,'Pendente transferida para '+shortDate(today))}
 try{localStorage.setItem(prefix+today,JSON.stringify(dst))}catch{notify('Não foi possível trazer as pendências.');return}save();render();notify(pend.length+(pend.length===1?' pendência trazida':' pendências trazidas')+' para hoje')});
